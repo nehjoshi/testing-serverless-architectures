@@ -34,14 +34,11 @@ async function getParameterValue(parameterName) { //Get SSM Parameter values
 exports.handler = failureLambda(async (event, context, callback) => {
     const failureLambdaParam = process.env.FAILURE_INJECTION_PARAM;
     const parameterValue = await getParameterValue(failureLambdaParam);
-    const payload = JSON.parse(event.body);
-    console.log(payload);
     // Access the id parameter
-    const id = payload.id;
-    console.log(id);
+    console.log(event.id);
     await dbConnectAndExecute(process.env.DB_URL);
-    try {
-        const user = await UserModel.find({_id: id});
+    try { 
+        const user = await UserModel.find({_id: event.id}); //Access the id param provided by the invoking function
         return {
             statusCode: 200,
             user: user
