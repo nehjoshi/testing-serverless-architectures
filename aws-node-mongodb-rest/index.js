@@ -48,23 +48,29 @@ exports.handler = async (event, context) => {
     const params = {
         FunctionName: 'hello_world', // Replace with the name of the target Lambda function
         InvocationType: 'RequestResponse', // Synchronous invocation
-        Payload: JSON.stringify({id: "62a79344e8f950d28f474689"}) // Pass any required input payload
+        Payload: JSON.stringify({id: event.id}) // Pass any required input payload
     };
     try {
+        console.log("Entered try block");
         const res = await lambda.invoke(params).promise(); //Invoke first function to get the user
+        console.log("Line 2");
         const response = JSON.parse(res.Payload);
+        console.log("First res: ",  response);
 
         const updateParams = {
             FunctionName: 'db_updates', // Replace with the name of the target Lambda function
             InvocationType: 'RequestResponse', // Synchronous invocation
-            Payload: JSON.stringify({id: response.user._id, newEmail: "a2@gmail.com"}) // Pass any required input payload
+            Payload: JSON.stringify({id: response.user[0]._id, newEmail: event.newEmail}) // Pass any required input payload
         };
+        console.log("Line 4: Update Params: ", updateParams);
 
         const resUpdate = await lambda.invoke(updateParams).promise();
+        console.log("Line 5");
         const responseUpdate = JSON.parse(resUpdate.Payload);
+        console.log("Line 6, responseUpdate: ", responseUpdate);
 
         console.log("Updated User: ", responseUpdate);
-        return "Success";
+        return responseUpdate;
     }
     catch (e) {
         return {

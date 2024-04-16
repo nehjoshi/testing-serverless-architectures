@@ -38,8 +38,11 @@ exports.handler = failureLambda(async (event, context, callback) => {
     console.log(event.id);
     await dbConnectAndExecute(process.env.DB_URL);
     try {
-        const user = await User.findOneAndUpdate({ _id: event.id }, { email: event.newEmail }); //Find and update user's email
+        console.log("Entered try block: ", event.newEmail);
+        const user = await UserModel.findOneAndUpdate({ _id: event.id }, { email: event.newEmail }); //Find and update user's email
+        console.log("Finished findOneAndUpdate() with new email: ", event.newEmail);
         await user.save();
+        console.log("Saved the User");
         return {
             statusCode: 200,
             user: user
