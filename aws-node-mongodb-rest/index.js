@@ -42,36 +42,6 @@ async function dbConnectAndExecute(dbUrl) {
     }
 }
 
-// exports.handler = failureLambda(async (event, context, callback) => {
-
-//     const lambda = new AWS.Lambda();
-//     const failureLambdaParam = process.env.FAILURE_INJECTION_PARAM;
-//     const parameterValue = await getParameterValue("failureLambdaParam");
-//     const params = {
-//         FunctionName: 'hello_world', // Replace with the name of the target Lambda function
-//         InvocationType: 'RequestResponse', // Synchronous invocation
-//         Payload: JSON.stringify({}) // Pass any required input payload
-//     };
-//     await dbConnectAndExecute(mongoString);
-//     try {
-//         const user = await UserModel.find({ _id: event.id });
-//         const response = await lambda.invoke(params).promise();
-//         console.log("Response: ", response);
-//         const responsePayload = JSON.parse(response.Payload);
-//         console.log("Response Payload: ", responsePayload);
-//         return {
-//             statusCode: 200,
-//             body: responsePayload
-//         }
-//     }
-//     catch (e) {
-//         return {
-//             statusCode: 500,
-//             body: "Something Went Wrong"
-//         }
-//     }
-
-// });
 
 exports.handler = async (event, context) => {
     const lambda = new AWS.Lambda();
@@ -81,11 +51,20 @@ exports.handler = async (event, context) => {
         Payload: JSON.stringify({id: "62a79344e8f950d28f474689"}) // Pass any required input payload
     };
     try {
-        const res = await lambda.invoke(params).promise();
-        console.log("Response: ", res);
+        const res = await lambda.invoke(params).promise(); //Invoke first function to get the user
         const response = JSON.parse(res.Payload);
-        console.log("Response Payload: ", response);
-        return response;
+
+        const updateParams = {
+            FunctionName: 'db_updates', // Replace with the name of the target Lambda function
+            InvocationType: 'RequestResponse', // Synchronous invocation
+            Payload: JSON.stringify({id: response.user._id, newEmail: "a2@gmail.com"}) // Pass any required input payload
+        };
+
+        const resUpdate = await lambda.invoke(updateParams).promise();
+        const responseUpdate = JSON.parse(resUpdate.Payload);
+
+        console.log("Updated User: ", responseUpdate);
+        return "Success";
     }
     catch (e) {
         return {

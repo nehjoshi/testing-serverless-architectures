@@ -37,17 +37,18 @@ exports.handler = failureLambda(async (event, context, callback) => {
     // Access the id parameter
     console.log(event.id);
     await dbConnectAndExecute(process.env.DB_URL);
-    try { 
-        const user = await UserModel.find({_id: event.id}); //Access the id param provided by the invoking function
+    try {
+        const user = await User.findOneAndUpdate({ _id: event.id }, { email: event.newEmail }); //Find and update user's email
+        await user.save();
         return {
             statusCode: 200,
             user: user
         }
     }
-    catch(e) {
+    catch (e) {
         return {
             statusCode: 500,
             message: "Internal Server Error"
         }
-    } 
+    }
 })
