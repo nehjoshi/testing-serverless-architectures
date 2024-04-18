@@ -27,7 +27,10 @@ exports.handler = async (event, context) => {
     const lambda = new AWS.Lambda();
     const helloWorldParams = getParams("hello_world", { id: event.id });
     const backupDBParams = getParams("backupDB", { id: event.id });
-    console.log(helloWorldParams);
+    
+
+
+
 
     let res = await lambda.invoke(helloWorldParams).promise();
     let response = JSON.parse(res.Payload);
@@ -38,26 +41,18 @@ exports.handler = async (event, context) => {
         console.log("Current iteration: ", n);
         n += 1;
     }
+    // return response;
 
-    if (!response.user) return {status: 500, message: "Internal server error"}
-    console.log("Final response: ", response);
-    return response;
-
-
-
-    // const res = await lambda.invoke(helloWorldParams).promise(); //If A doesn't work, try B
-    // const response = JSON.parse(res.Payload);
-    // if (!response.user) {
-    //     const res2 = await lambda.invoke(backupDBParams).promise();
-    //     const response2 = JSON.parse(res2.Payload);
-    //     console.log("Backup function response: ", response2);
-    //     return response2;
-    // }
-    // else {
-    //     console.log("Original function response: ", response);
-    //     return response;
-    // }
-    
+    if (!response.user) {
+        const res2 = await lambda.invoke(backupDBParams).promise();
+        const response2 = JSON.parse(res2.Payload);
+        console.log("Backup function response: ", response2);
+        return response2;
+    }
+    else {
+        console.log("Original function response: ", response);
+        return response;
+    }
 
     try {
         console.log("Invoking hello_world...");
